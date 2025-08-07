@@ -224,10 +224,12 @@ export default function Home() {
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Button variant="outline" size="lg" className="group">
-                  <Play className="mr-2 h-5 w-5" />
-                  Voir la démo
-                </Button>
+                <Link href="/nextgen-showcase">
+                  <Button variant="outline" size="lg" className="group">
+                    <Play className="mr-2 h-5 w-5" />
+                    Voir la démo
+                  </Button>
+                </Link>
               </div>
               {/* Stats */}
               <div className="mt-12 grid grid-cols-3 gap-8">
@@ -392,13 +394,15 @@ export default function Home() {
                   Commencer gratuitement
                 </Button>
               </Link>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-primary-600"
-              >
-                Planifier une démo
-              </Button>
+              <Link href="/dashboard/conversation">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-primary-600"
+                >
+                  Planifier une démo
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </div>

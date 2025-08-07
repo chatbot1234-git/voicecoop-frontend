@@ -1,0 +1,74 @@
+[build]
+  publish = ".next"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+  NODE_ENV = "production"
+
+# Configuration pour Next.js sur Netlify
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Redirections et rewrites
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard/*"
+  to = "/dashboard/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/auth/*"
+  to = "/auth/index.html"
+  status = 200
+
+# SPA fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers de sécurité
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# Configuration des fonctions
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Variables d'environnement (à configurer dans l'interface Netlify)
+# NEXTAUTH_URL = "https://voicecoop-staging.netlify.app"
+# NEXTAUTH_SECRET = "your-secret-key"
+# NEXT_PUBLIC_SUPABASE_URL = "your-supabase-url"
+# NEXT_PUBLIC_SUPABASE_ANON_KEY = "your-supabase-anon-key"
+# SUPABASE_SERVICE_ROLE_KEY = "your-service-role-key"
+
+# Configuration du cache
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -1,0 +1,215 @@
+// VoiceCoop Prisma Schema - Production Ready
+// Base de données PostgreSQL pour l'application complète
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle Utilisateur
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  full_name   String?
+  avatar_url  String?
+  provider    String   @default("credentials") // credentials, github, google
+  provider_id String?
+
+  // Authentification
+  password_hash String?
+  email_verified Boolean @default(false)
+
+  // Métadonnées
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  last_login DateTime?
+
+  // Relations
+  conversations Conversation[]
+  messages      Message[]
+  votes         Vote[]
+  proposals     Proposal[]
+  sessions      Session[]
+  accounts      Account[]
+  notifications Notification[]
+  pushSubscriptions PushSubscription[]
+  notificationPreferences NotificationPreferences?
+
+  @@map("users")
+}
+
+// Modèle Account pour NextAuth
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// Modèle Session pour NextAuth
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// Modèle Conversation
+model Conversation {
+  id          String   @id @default(cuid())
+  title       String?
+  user_id     String
+
+  // Métadonnées
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relations
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  messages    Message[]
+
+  @@map("conversations")
+}
+
+// Modèle Message
+model Message {
+  id              String   @id @default(cuid())
+  conversation_id String
+  user_id         String
+
+  // Contenu
+  content         String
+  role            String   // user, assistant, system
+
+  // Métadonnées IA
+  tokens_used     Int?
+  confidence      Float?
+  model_used      String?
+
+  // Audio
+  audio_url       String?
+  audio_duration  Float?
+
+  // Métadonnées
+  created_at      DateTime @default(now())
+
+  // Relations
+  conversation    Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// Modèle Proposition (Gouvernance)
+model Proposal {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  author_id       String
+
+  // Statut
+  status          String   @default("draft") // draft, active, passed, rejected
+
+  // Votes
+  votes_for       Int      @default(0)
+  votes_against   Int      @default(0)
+  votes_abstain   Int      @default(0)
+
+  // Dates
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  voting_deadline DateTime?
+
+  // Relations
+  author          User     @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  votes           Vote[]
+
+  @@map("proposals")
+}
+
+// Modèle Vote
+model Vote {
+  id          String   @id @default(cuid())
+  proposal_id String
+  user_id     String
+  vote_type   String   // for, against, abstain
+
+  // Métadonnées
+  created_at  DateTime @default(now())
+
+  // Relations
+  proposal    Proposal @relation(fields: [proposal_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([proposal_id, user_id])
+  @@map("votes")
+}
+
+// Modèle Notification
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // info, success, warning, error
+  title       String
+  message     String
+  data        String? // JSON data
+  read        Boolean  @default(false)
+
+  // Métadonnées
+  created_at  DateTime @default(now())
+  expiresAt   DateTime?
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// Modèle Push Subscription
+model PushSubscription {
+  id           String   @id @default(cuid())
+  userId       String
+  subscription String // JSON subscription object
+
+  // Métadonnées
+  created_at   DateTime @default(now())
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
+}
+
+// Modèle Notification Preferences
+model NotificationPreferences {
+  id      String  @id @default(cuid())
+  userId  String  @unique
+  email   Boolean @default(true)
+  push    Boolean @default(true)
+  inapp   Boolean @default(true)
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
+}

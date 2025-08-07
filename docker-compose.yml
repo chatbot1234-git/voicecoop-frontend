@@ -1,0 +1,218 @@
+version: '3.8'
+
+# =============================================================================
+# 🚀 VOICECOOP - DOCKER COMPOSE CONFIGURATION
+# =============================================================================
+# Configuration Docker mise à jour pour refléter l'architecture actuelle
+# Base de données: Supabase Cloud (PostgreSQL optionnel pour dev local)
+# Cache: Redis pour performance et rate limiting
+# Monitoring: Sentry intégré dans l'application
+# =============================================================================
+
+services:
+  # 📱 Application Next.js - Frontend principal
+  voicecoop-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: voicecoop-app
+    ports:
+      - "3000:3000"
+    environment:
+      # Configuration de base
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_NAME=VoiceCoop
+      - NEXT_PUBLIC_APP_VERSION=1.0.0
+
+      # Authentification
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-voicecoop-secret-dev}
+
+      # Supabase Cloud (production)
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+
+      # PostgreSQL local (backup/développement)
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/voicecoop
+
+      # Cache Redis
+      - REDIS_URL=redis://redis:6379
+
+      # APIs IA
+      - GOOGLE_GEMINI_API_KEY=${GOOGLE_GEMINI_API_KEY}
+      - ULTRAVOX_API_KEY=${ULTRAVOX_API_KEY}
+
+      # Monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+
+      # OAuth
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+
+    depends_on:
+      - redis
+      - postgres  # Optionnel si Supabase Cloud utilisé
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    networks:
+      - voicecoop-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 🗄️  PostgreSQL - Base de données locale (backup/dev)
+  # Note: En production, utilisez Supabase Cloud
+  postgres:
+    image: postgres:15-alpine
+    container_name: voicecoop-postgres
+    environment:
+      - POSTGRES_DB=voicecoop
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./supabase/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./supabase/migrations:/docker-entrypoint-initdb.d/migrations
+    networks:
+      - voicecoop-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # 🗄️  Redis - Cache et rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: voicecoop-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    networks:
+      - voicecoop-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 🔧 Nginx - Reverse proxy et load balancer (optionnel)
+  nginx:
+    image: nginx:alpine
+    container_name: voicecoop-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - voicecoop-app
+    networks:
+      - voicecoop-network
+    restart: unless-stopped
+    profiles:
+      - production  # Activé seulement avec --profile production
+
+  # 📊 Monitoring local (optionnel - Sentry utilisé en production)
+  # Prometheus pour métriques système
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: voicecoop-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - voicecoop-network
+    restart: unless-stopped
+    profiles:
+      - monitoring  # Activé seulement avec --profile monitoring
+
+  # 📈 Grafana pour visualisation (optionnel)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: voicecoop-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+    networks:
+      - voicecoop-network
+    restart: unless-stopped
+    profiles:
+      - monitoring  # Activé seulement avec --profile monitoring
+
+# 💾 Volumes persistants
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# 🌐 Réseaux
+networks:
+  voicecoop-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# =============================================================================
+# 🚀 COMMANDES DOCKER COMPOSE UTILES
+# =============================================================================
+#
+# Développement (app + redis + postgres):
+# docker-compose up -d
+#
+# Production avec monitoring:
+# docker-compose --profile monitoring up -d
+#
+# Production avec nginx:
+# docker-compose --profile production up -d
+#
+# Logs en temps réel:
+# docker-compose logs -f voicecoop-app
+#
+# Redémarrer l'application:
+# docker-compose restart voicecoop-app
+#
+# Nettoyer tout:
+# docker-compose down -v --remove-orphans
+#
+# =============================================================================

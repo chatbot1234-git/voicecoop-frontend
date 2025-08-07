@@ -1,10 +1,8 @@
 name: 🚀 Deploy to Netlify
 
+# Temporarily disabled - using Netlify auto-deploy instead
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   deploy:

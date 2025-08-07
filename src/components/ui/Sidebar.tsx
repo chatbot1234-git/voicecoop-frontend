@@ -74,9 +74,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           x: isMobileOpen ? 0 : -280
         }}
         className={cn(
-          'fixed inset-y-0 left-0 z-40 w-70 bg-surface-100/20 backdrop-blur-xl border-r border-surface-300/30',
+          'fixed inset-y-0 left-0 z-40 bg-surface-100/20 backdrop-blur-xl border-r border-surface-300/30',
           'lg:translate-x-0 lg:static lg:inset-0',
           'transition-transform duration-300 ease-in-out',
+          'w-full max-w-sm lg:w-70',
           className
         )}
         style={{ width: '280px' }}

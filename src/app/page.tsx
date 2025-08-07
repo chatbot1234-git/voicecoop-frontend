@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-surface-50 via-surface-100 to-surface-200 relative overflow-hidden">
       {/* Header Next-Gen */}
-      <header className="relative z-10 px-6 py-4">
+      <header className="relative z-10 px-4 sm:px-6 py-4">
         <div className="absolute inset-0 bg-surface-100/10 backdrop-blur-md border-b border-surface-300/20" />
         <nav className="relative mx-auto flex max-w-7xl items-center justify-between">
           <motion.div
@@ -199,14 +199,14 @@ export default function Home() {
           </svg>
         </div>
         <div className="mx-auto max-w-7xl relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Contenu principal */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-5xl lg:text-6xl font-display font-bold text-gray-900 dark:text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-gray-900 dark:text-white leading-tight">
                 L'IA Vocale
                 <span className="text-primary-500 dark:text-secondary-400"> Coopérative</span>
                 <br />
@@ -232,7 +232,7 @@ export default function Home() {
                 </Link>
               </div>
               {/* Stats */}
-              <div className="mt-12 grid grid-cols-3 gap-8">
+              <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
                 <div>
                   <div className="text-2xl font-bold text-gray-900">99.9%</div>
                   <div className="text-sm text-gray-600">Disponibilité</div>
@@ -292,7 +292,7 @@ export default function Home() {
         </div>
       </section>
       {/* Features Section */}
-      <section className="px-6 py-20 bg-white">
+      <section className="px-4 sm:px-6 py-12 sm:py-20 bg-white">
         <div className="mx-auto max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -370,7 +370,7 @@ export default function Home() {
         </div>
       </section>
       {/* CTA Section */}
-      <section className="px-6 py-20 bg-primary-600">
+      <section className="px-4 sm:px-6 py-12 sm:py-20 bg-primary-600">
         <div className="mx-auto max-w-4xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

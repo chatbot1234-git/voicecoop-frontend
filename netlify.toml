@@ -11,23 +11,13 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Redirections et rewrites
+# Redirections et rewrites pour Next.js App Router
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
 
-[[redirects]]
-  from = "/dashboard/*"
-  to = "/dashboard/index.html"
-  status = 200
-
-[[redirects]]
-  from = "/auth/*"
-  to = "/auth/index.html"
-  status = 200
-
-# SPA fallback
+# SPA fallback pour Next.js - DOIT ÊTRE LE DERNIER
 [[redirects]]
   from = "/*"
   to = "/index.html"

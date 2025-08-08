@@ -7,6 +7,15 @@
   NPM_VERSION = "9"
   NODE_ENV = "production"
 
+# Configuration SSL et sécurité
+[context.production]
+  command = "npx prisma generate && npm run build"
+
+[context.production.environment]
+  HTTPS = "true"
+  SSL_ENABLED = "true"
+  FORCE_HTTPS = "true"
+
 # Configuration pour Next.js sur Netlify
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -16,6 +25,13 @@
   from = "/api/*"
   to = "/.netlify/functions/:splat"
   status = 200
+
+# Force HTTPS redirect
+[[redirects]]
+  from = "http://voicecoop.netlify.app/*"
+  to = "https://voicecoop.netlify.app/:splat"
+  status = 301
+  force = true
 
 # SPA fallback pour Next.js - DOIT ÊTRE LE DERNIER
 [[redirects]]
@@ -61,6 +77,17 @@
   NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tdGN1a2J0ZG5idmRyaGx3aHJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MzEyNjIsImV4cCI6MjA3MDEwNzI2Mn0.8uHdE3MDShrv3DxdHw9TkA5gZQt8B57b96iOwxqeAiA"
   SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tdGN1a2J0ZG5idmRyaGx3aHJpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDUzMTI2MiwiZXhwIjoyMDcwMTA3MjYyfQ.9RTNsQg_cefDbKTjArRiBvn6zRxH0tiYMRT4cOgO6BY"
   DATABASE_URL = "postgresql://postgres.omtcukbtdnbvdrhlwhri:voicecoop2024@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"
+
+# Headers de sécurité SSL
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co;"
 
 # Configuration du cache
 [[headers]]

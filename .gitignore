@@ -30,8 +30,19 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files - ALL EXCLUDED FOR SECURITY
+# 🔒 SECURITY - ALL SENSITIVE FILES EXCLUDED
 .env*
+*.env
+.env.local
+.env.development
+.env.staging
+.env.production
+config.local.*
+secrets.*
+*.key
+*.pem
+*.p12
+*.pfx
 
 # vercel
 .vercel

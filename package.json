@@ -70,7 +70,11 @@
     "docker:stop": "node scripts/docker-manager.js stop",
     "docker:clean": "node scripts/docker-manager.js clean",
     "docker:status": "node scripts/docker-manager.js status",
-    "docker:logs": "node scripts/docker-manager.js logs"
+    "docker:logs": "node scripts/docker-manager.js logs",
+    "security:audit": "node scripts/security-audit.js",
+    "test:user-journey": "node scripts/user-journey-test.js",
+    "test:security": "npm run security:audit && npm run test:user-journey",
+    "pre-deploy": "npm run security:audit && npm run test:user-journey && npm run build"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",

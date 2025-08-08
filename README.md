@@ -10,9 +10,9 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
 [![Playwright](https://img.shields.io/badge/Playwright-E2E-red?style=flat-square&logo=playwright)](https://playwright.dev/)
 
-**🚀 Production-Ready | 🧪 85% Test Coverage | ⚡ < 3s Load Time**
+**🚀 Production-Ready | 🧪 85% Test Coverage | ⚡ < 3s Load Time | 🔒 Security Audited**
 
-[🌐 Demo Live](https://chic-griffin-fae28c.netlify.app/) • [📖 Documentation](./DOCS.md) • [🐳 Docker Guide](./DOCKER.md) • [🚀 Deploy Guide](./DEPLOY-QUICK.md)
+[🌐 Demo Live](https://voicecoop.netlify.app/) • [📖 Documentation](./DOCS.md) • [🐳 Docker Guide](./DOCKER.md) • [🚀 Deploy Guide](./DEPLOY-QUICK.md) • [🔒 Security Guide](#-sécurité)
 
 </div>
 
@@ -277,6 +277,51 @@ Ce projet est sous licence **MIT**. Voir le fichier [LICENSE](./LICENSE) pour pl
 - **Google Gemini** - IA conversationnelle
 - **Tailwind CSS** - Framework CSS utilitaire
 - **Playwright** - Tests E2E robustes
+
+## 🔒 **Sécurité**
+
+### **⚠️ Configuration Sécurisée**
+
+1. **Copiez le template** :
+   ```bash
+   cp .env.template .env.local
+   ```
+
+2. **Générez des secrets sécurisés** :
+   ```bash
+   # NextAuth Secret
+   openssl rand -base64 32
+
+   # JWT Secret
+   openssl rand -base64 32
+
+   # Encryption Key
+   openssl rand -base64 32
+   ```
+
+3. **Remplacez TOUTES les valeurs** dans `.env.local`
+
+4. **Ne commitez JAMAIS** les fichiers `.env*` avec de vraies clés
+
+### **🛡️ Audit de Sécurité**
+
+```bash
+# Lancer l'audit complet
+npm run security:audit
+
+# Test parcours utilisateur
+npm run test:user-journey
+
+# Test complet avant déploiement
+npm run pre-deploy
+```
+
+### **🚨 En cas de Fuite de Clés**
+
+1. **Régénérez immédiatement** toutes les clés exposées
+2. **Révoquez** les tokens OAuth
+3. **Changez** les mots de passe de base de données
+4. **Auditez** les logs d'accès
 
 ---
 
